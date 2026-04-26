@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sys Watcher — AI System Intelligence</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --green:   #4ade80;
+      --amber:   #fbbf24;
+      --red:     #f87171;
+      --blue:    #60a5fa;
+      --purple:  #a78bfa;
+      --cyan:    #22d3ee;
+      --bg:      #030305;
+      --bg2:     #0a0a0f;
+      --bg3:     #0f0f17;
+      --bg4:     #14141e;
+      --border:  rgba(255,255,255,0.07);
+      --text:    #e2e8f0;
+      --muted:   #475569;
+      --muted2:  #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* ══════════════════════════════════════════
+       LANDING PAGE
+    ══════════════════════════════════════════ */
+    #landing {
+      min-height: 100svh;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Split layout — left text, right Spline */
+    .landing-split {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 100svh;
+      padding: clamp(1rem, 3vw, 4rem);
+      padding-top: clamp(5rem, 8vh, 7rem);
+      gap: clamp(1rem, 2vw, 2rem);
+      position: relative;
+      z-index: 5;
+    }
+
+    .landing-left {
+      flex: 1;
+      max-width: 580px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding-top: 0;
+    }
+
+    /* Override hero centering for split layout */
+    .landing-left .hero-badge { 
+      margin-bottom: 1.2rem; 
+      align-self: flex-start;
+      margin-left: 0;
+    }
+    .landing-left .hero-title { 
+      font-size: clamp(34px, 4.5vw, 60px);
+      text-align: left;
+    }
+
+    /* Hide Spline watermark — free tier branding */
+    spline-viewer::part(logo),
+    spline-viewer::part(watermark) { display: none !important; }
+    #spline-wrap canvas + div,
+    #spline-wrap > spline-viewer > div:last-child { display: none !important; }
+    .landing-left .cycling-wrap { font-size: clamp(14px, 1.6vw, 18px); text-align: left; }
+    .landing-left .btn-row { justify-content: flex-start; margin-bottom: 2.5rem; }
+    .landing-left .features-section { max-width: 100%; }
+    .landing-left .features-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+
+    /* Right side — Spline container — matches original large size */
+    .landing-right {
+      flex: 0 0 520px;
+      height: 580px;
+      position: relative;
+      border-radius: 0;
+      overflow: hidden;
+      border: none;
+      background: transparent;
+      animation: splineIn 1.4s cubic-bezier(0.16,1,0.3,1) 0.6s both;
+    }
+
+    @keyframes splineIn {
+      from { opacity: 0; transform: translateX(40px) scale(0.95); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    /* Blend Spline into background — only bottom and sides, not top */
+    .landing-right::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%),
+        linear-gradient(to top, var(--bg) 0%, transparent 18%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .landing-right::before { display: none; }
+
+    spline-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Spline loading state */
+    .spline-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 3;
+      background: rgba(5,5,10,0.8);
+      transition: opacity 0.5s;
+    }
+
+    .spline-loader.hidden { opacity: 0; pointer-events: none; }
+
+    .loader-ring {
+      width: 40px; height: 40px;
+      border: 2px solid rgba(74,222,128,0.15);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-text {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.1em;
+    }
+
+    /* Responsive — stack on smaller screens */
+    @media (max-width: 1100px) {
+      .landing-split {
+        flex-direction: column;
+        padding: 6rem 2rem 2rem;
+        align-items: center;
+      }
+      .landing-left {
+        align-items: center;
+        text-align: center;
+        max-width: 680px;
+      }
+      .landing-left .cycling-wrap { text-align: center; }
+      .landing-left .btn-row { justify-content: center; }
+      .landing-right {
+        flex: none;
+        width: 100%;
+        max-width: 560px;
+        height: 460px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .landing-right { height: 340px; }
+      .landing-split { padding: 5rem 1rem 1rem; }
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(74,222,128,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,222,128,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 0%, transparent 100%);
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+    }
+    .orb-1 { width:600px; height:600px; top:-100px; left:-100px; background:radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%); animation: orbDrift 12s ease-in-out infinite; }
+    .orb-2 { width:400px; height:400px; bottom:-50px; right:-50px; background:radial-gradient(circle, rgba(96,165,250,0.07) 0%, transparent 70%); animation: orbDrift 15s ease-in-out infinite reverse; }
+    .orb-3 { width:300px; height:300px; top:40%; left:60%; background:radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%); animation: orbDrift 10s ease-in-out infinite 3s; }
+
+    @keyframes orbDrift {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33%      { transform: translate(30px,-20px) scale(1.05); }
+      66%      { transform: translate(-20px,30px) scale(0.95); }
+    }
+
+    /* Core pulse used by dots in other pages */
+    @keyframes corePulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(74,222,128,0.2), 0 0 20px rgba(74,222,128,0.8), 0 0 50px rgba(74,222,128,0.3); }
+      50%      { box-shadow: 0 0 0 6px rgba(74,222,128,0.1), 0 0 40px rgba(74,222,128,1), 0 0 80px rgba(74,222,128,0.5); }
+    }
+
+    /* Project title at top center */
+    .project-title {
+      position: absolute;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: heroIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    .project-name {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.9) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .project-name span {
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 14px rgba(74,222,128,0.6));
+    }
+
+    .project-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(74,222,128,0.8);
+      animation: liveBlink 2s ease-in-out infinite;
+    }
+
+    @keyframes liveBlink {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* Hero content */
+    .hero {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      padding: 0 2rem;
+      margin-top: 220px;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: heroIn 1.2s cubic-bezier(0.16,1,0.3,1) 0.3s forwards;
+    }
+
+    @keyframes heroIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: rgba(74,222,128,0.07);
+      border: 1px solid rgba(74,222,128,0.2);
+      padding: 7px 18px;
+      border-radius: 100px;
+      margin-bottom: 1.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: corePulse 2s infinite;
+    }
+
+    .hero-title {
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 800;
+      line-height: 1.1;
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title .grad {
+      background: linear-gradient(135deg, var(--green) 0%, var(--cyan) 50%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Animated cycling text */
+    .cycling-wrap {
+      font-size: clamp(16px, 2vw, 22px);
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .cycling-text {
+      display: inline-block;
+      color: var(--amber);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      opacity: 1;
+    }
+
+    .cycling-text.exit {
+      opacity: 0;
+      transform: translateY(-12px) blur(4px);
+      filter: blur(4px);
+    }
+
+    .cycling-text.enter {
+      opacity: 0;
+      transform: translateY(12px);
+      filter: blur(4px);
+    }
+
+    /* Gradient border buttons */
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+    }
+
+    .btn-grad {
+      position: relative;
+      padding: 2px;
+      border-radius: 100px;
+      background: linear-gradient(135deg, rgba(74,222,128,0.6), rgba(96,165,250,0.6), rgba(167,139,250,0.6));
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-grad:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(74,222,128,0.2);
+    }
+
+    .btn-grad-inner {
+      background: var(--bg2);
+      border-radius: 100px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      transition: background 0.3s;
+    }
+
+    .btn-grad:hover .btn-grad-inner { background: var(--bg3); }
+
+    .btn-grad.primary .btn-grad-inner {
+      background: linear-gradient(135deg, rgba(74,222,128,0.9), rgba(34,211,238,0.8));
+      color: #000;
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text);
+      padding: 13px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(74,222,128,0.08);
+      border-color: rgba(74,222,128,0.4);
+      color: var(--green);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(74,222,128,0.1);
+    }
+
+    /* Orbital feature cards */
+    .features-section {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+    }
+
+    .feat {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feat::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--feat-color, rgba(74,222,128,0.06)) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feat:hover { border-color: var(--feat-color, rgba(74,222,128,0.3)); transform: translateY(-3px); }
+    .feat:hover::before { opacity: 1; }
+
+    .feat-icon {
+      font-size: 20px;
+      margin-bottom: 10px;
+      display: block;
+      filter: drop-shadow(0 0 8px var(--feat-color, rgba(74,222,128,0.5)));
+    }
+
+    .feat-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .feat-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted2);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      z-index: 5;
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollBounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(6px); }
+    }
+
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, var(--green), transparent);
+    }
+
+    /* ══════════════════════════════════════════
+       SHARED PAGE STYLES
+    ══════════════════════════════════════════ */
+    .page {
+      display: none;
+      min-height: 100vh;
+      padding: 1.5rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      animation: pageIn 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .title-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(74,222,128,0.7);
+      animation: corePulse 2s infinite;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 10px; }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: rgba(74,222,128,0.07);
+      border: 1px solid rgba(74,222,128,0.18);
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: corePulse 2s infinite;
+    }
+
+    .back-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .back-btn:hover { border-color: rgba(74,222,128,0.3); color: var(--green); }
+
+    /* Cards */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .card-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-value {
+      font-size: 38px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .card-sub { font-size: 11px; color: var(--muted); margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+
+    .bar-track {
+      height: 3px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 3px;
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .s-ok   { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; }
+    .s-warn { color: var(--amber); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; }
+    .s-crit { color: var(--red);   font-size: 10px; font-weight: 700; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; }
+    .b-ok   { background: var(--green); box-shadow: 0 0 10px rgba(74,222,128,0.5); }
+    .b-warn { background: var(--amber); box-shadow: 0 0 10px rgba(251,191,36,0.5); }
+    .b-crit { background: var(--red);   box-shadow: 0 0 10px rgba(248,113,113,0.5); }
+
+    /* Panel title */
+    .panel-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ══════════════════════════════════════════
+       DASHBOARD
+    ══════════════════════════════════════════ */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    /* Colored top border per metric */
+    .card-cpu   { border-top: 2px solid rgba(74,222,128,0.5); }
+    .card-ram   { border-top: 2px solid rgba(251,191,36,0.5); }
+    .card-disk  { border-top: 2px solid rgba(96,165,250,0.5); }
+    .card-net   { border-top: 2px solid rgba(167,139,250,0.5); }
+
+    .net-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+    .net-label { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .net-val   { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+    .dash-bottom {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 12px;
+    }
+
+    /* Process rows */
+    .proc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.15s;
+    }
+
+    .proc-row:last-child { border-bottom: none; }
+    .proc-row:hover { background: rgba(255,255,255,0.02); margin: 0 -8px; padding: 9px 8px; border-radius: 6px; }
+
+    .proc-name { font-size: 13px; color: var(--text); }
+    .proc-pid  { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+    .proc-right { display: flex; align-items: center; gap: 10px; }
+
+    .proc-bar-wrap { width: 70px; height: 3px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .proc-bar-fill { height: 3px; border-radius: 4px; background: var(--blue); box-shadow: 0 0 6px rgba(96,165,250,0.4); }
+    .proc-mb { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; min-width: 58px; text-align: right; }
+
+    /* Advisor items */
+    .adv-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .adv-item:last-child { border-bottom: none; }
+
+    .adv-tag {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.06em;
+    }
+
+    .tag-hw  { background: rgba(96,165,250,0.12);  color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+    .tag-sw  { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+    .tag-sec { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+    .adv-text { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+
+    /* ══════════════════════════════════════════
+       ANOMALIES
+    ══════════════════════════════════════════ */
+    .anomaly-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .anomaly-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 4px 0 0 4px;
+    }
+
+    .anomaly-item.crit {
+      background: rgba(248,113,113,0.05);
+      border-color: rgba(248,113,113,0.15);
+    }
+    .anomaly-item.crit::before { background: var(--red); }
+
+    .anomaly-item.warn {
+      background: rgba(251,191,36,0.05);
+      border-color: rgba(251,191,36,0.15);
+    }
+    .anomaly-item.warn::before { background: var(--amber); }
+
+    .anomaly-item:hover { transform: translateX(2px); }
+
+    .anomaly-sev {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .sev-crit { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+    .sev-warn { background: rgba(251,191,36,0.15);  color: var(--amber); border: 1px solid rgba(251,191,36,0.25); }
+
+    .anomaly-body { flex: 1; }
+    .anomaly-metric { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .anomaly-msg    { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .anomaly-time   { font-size: 10px; color: var(--muted2); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+
+    /* Filter tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .filter-tab {
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .filter-tab.active, .filter-tab:hover {
+      background: rgba(74,222,128,0.08);
+      border-color: rgba(74,222,128,0.25);
+      color: var(--green);
+    }
+
+    /* ══════════════════════════════════════════
+       HISTORY
+    ══════════════════════════════════════════ */
+    .history-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .history-full { margin-bottom: 12px; }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .legend-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+
+    /* ══════════════════════════════════════════
+       AI CHAT
+    ══════════════════════════════════════════ */
+    #ai-chat {
+      position: relative;
+    }
+
+    /* Animated background for AI chat */
+    .chat-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .chat-bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      animation: orbDrift 20s ease-in-out infinite;
+    }
+
+    .chat-bg-orb-1 { width:500px; height:500px; top:10%; left:5%; background:radial-gradient(circle, rgba(74,222,128,0.04), transparent 70%); }
+    .chat-bg-orb-2 { width:400px; height:400px; bottom:10%; right:5%; background:radial-gradient(circle, rgba(96,165,250,0.04), transparent 70%); animation-delay:5s; }
+    .chat-bg-orb-3 { width:300px; height:300px; top:50%; left:50%; background:radial-gradient(circle, rgba(167,139,250,0.03), transparent 70%); animation-delay:10s; }
+
+    #ai-chat .page-header,
+    #ai-chat .chat-pills,
+    #ai-chat .chat-window,
+    #ai-chat .chat-input-row {
+      position: relative; z-index: 1;
+    }
+
+    .chat-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .chat-pill {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .chat-pill:hover {
+      border-color: rgba(74,222,128,0.3);
+      color: var(--green);
+      background: rgba(74,222,128,0.05);
+    }
+
+    .chat-window {
+      background: rgba(10,10,15,0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      height: 420px;
+      overflow-y: auto;
+      padding: 1.25rem;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-window::-webkit-scrollbar { width: 3px; }
+    .chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .msg {
+      max-width: 76%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.65;
+      animation: msgIn 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .msg.user {
+      background: linear-gradient(135deg, rgba(74,222,128,0.9), rgba(34,211,238,0.8));
+      color: #000;
+      align-self: flex-end;
+      font-weight: 500;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.ai {
+      background: var(--bg3);
+      color: #cbd5e1;
+      align-self: flex-start;
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.thinking {
+      background: var(--bg3);
+      color: var(--muted);
+      align-self: flex-start;
+      border: 1px solid var(--border);
+    }
+
+    .typing-dots span {
+      display: inline-block;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--muted);
+      margin: 0 2px;
+      animation: typeBounce 1.4s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typeBounce {
+      0%,60%,100% { transform: translateY(0); }
+      30%          { transform: translateY(-8px); }
+    }
+
+    .chat-input-row { display: flex; gap: 10px; }
+
+    .chat-input {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus { border-color: rgba(74,222,128,0.4); }
+    .chat-input::placeholder { color: var(--muted2); }
+
+    .chat-send {
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .chat-send:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,222,128,0.25); }
+    .chat-send:disabled { background: var(--bg4); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ══════════════════════════════════════════
+       SCROLLBAR
+    ══════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .metrics-row { grid-template-columns: repeat(2,1fr); }
+      .dash-bottom  { grid-template-columns: 1fr; }
+      .history-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: repeat(2,1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .metrics-row { grid-template-columns: 1fr 1fr; }
+      .hero-title  { font-size: 32px; }
+      .page { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LANDING
+══════════════════════════════════════════ -->
+<div id="landing">
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Project title at center top -->
+  <div class="project-title">
+    <div class="project-dot"></div>
+    <div class="project-name">Sys<span>Watch</span></div>
+  </div>
+
+  <!-- Split layout: left content + right Spline 3D -->
+  <div class="landing-split">
+
+    <!-- LEFT — all text and buttons -->
+    <div class="landing-left hero">
+      <div class="hero-badge"><div class="badge-dot"></div>GenAI Powered · System Intelligence</div>
+
+      <h1 class="hero-title">
+        Know your system.<br>
+        <span class="grad">Before it fails.</span>
+      </h1>
+
+      <div class="cycling-wrap">
+        Your system has <span class="cycling-text" id="cycler">memory leaks</span> you don't know about.
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-grad primary" onclick="showPage('dashboard')">
+          <div class="btn-grad-inner">⚡ Open Dashboard</div>
+        </div>
+        <button class="btn-ghost" onclick="showPage('anomalies')">🔔 Anomaly Log</button>
+        <button class="btn-ghost" onclick="showPage('history')">📈 History</button>
+        <button class="btn-ghost" onclick="showPage('ai-chat')">🧠 AI Advisor</button>
+      </div>
+
+      <div class="features-section">
+        <div class="features-grid">
+          <div class="feat" style="--feat-color:rgba(74,222,128,0.3)" onclick="showPage('dashboard')">
+            <span class="feat-icon">⚡</span>
+            <div class="feat-name">Live Metrics</div>
+            <div class="feat-desc">CPU, RAM, disk & network — every 5 seconds</div>
+          </div>
+          <div class="feat" style="--feat-color:rgba(251,191,36,0.3)" onclick="showPage('anomalies')">
+            <span class="feat-icon">🔔</span>
+            <div class="feat-name">Smart Alerts</div>
+            <div class="feat-desc">State-change detection — no noise, only signals</div>
+          </div>
+          <div class="feat" style="--feat-color:rgba(167,139,250,0.3)" onclick="showPage('ai-chat')">
+            <span class="feat-icon">🧠</span>
+            <div class="feat-name">AI + RAG</div>
+            <div class="feat-desc">Chat with your system using Groq + history</div>
+          </div>
+          <div class="feat" style="--feat-color:rgba(248,113,113,0.3)" onclick="showPage('dashboard')">
+            <span class="feat-icon">🐛</span>
+            <div class="feat-name">Bug Detection</div>
+            <div class="feat-desc">Handle leaks, memory leaks, zombie processes</div>
+          </div>
+          <div class="feat" style="--feat-color:rgba(248,113,113,0.3)" onclick="showPage('dashboard')">
+            <span class="feat-icon">🔒</span>
+            <div class="feat-name">Security Scan</div>
+            <div class="feat-desc">Suspicious processes & anomalous behaviour</div>
+          </div>
+          <div class="feat" style="--feat-color:rgba(96,165,250,0.3)" onclick="showPage('history')">
+            <span class="feat-icon">📈</span>
+            <div class="feat-name">Trend Graphs</div>
+            <div class="feat-desc">Rolling window charts from CSV history</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — Spline 3D blended into page -->
+    <div class="landing-right" id="spline-wrap">
+      <div class="spline-loader" id="spline-loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">Loading 3D scene...</div>
+      </div>
+      <spline-viewer
+        url="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+        id="spline-scene"
+      ></spline-viewer>
+      <!-- Cover watermark -->
+      <div style="position:absolute;bottom:0;right:0;width:200px;height:50px;background:var(--bg);z-index:10;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════ -->
+<div id="dashboard" class="page">
+  <div class="page-header">
+    <div class="page-title"><div class="title-dot"></div>System Dashboard</div>
+    <div class="header-right">
+      <div class="status-pill"><div class="status-dot"></div>LIVE · 5s</div>
+      <button class="back-btn" onclick="showLanding()">← Back</button>
+    </div>
+  </div>
+
+  <div class="metrics-row">
+    <div class="card card-cpu">
+      <div class="card-label">CPU Usage</div>
+      <div class="card-value" id="cpu-val">—</div>
+      <div class="card-sub"   id="cpu-sub"></div>
+      <div class="bar-track"><div class="bar-fill" id="cpu-bar" style="width:0%"></div></div>
+      <div id="cpu-status">—</div>
+    </div>
+    <div class="card card-ram">
+      <div class="card-label">RAM Usage</div>
+      <div class="card-value" id="ram-val">—</div>
+      <div class="card-sub"   id="ram-sub"></div>
+      <div class="bar-track"><div class="bar-fill" id="ram-bar" style="width:0%"></div></div>
+      <div id="ram-status">—</div>
+    </div>
+    <div class="card card-disk">
+      <div class="card-label">Disk Usage</div>
+      <div class="card-value" id="disk-val">—</div>
+      <div class="card-sub"   id="disk-sub"></div>
+      <div class="bar-track"><div class="bar-fill" id="disk-bar" style="width:0%"></div></div>
+      <div id="disk-status">—</div>
+    </div>
+    <div class="card card-net">
+      <div class="card-label">Network</div>
+      <div class="net-row" style="margin-top:8px">
+        <span class="net-label">↑ SENT</span>
+        <span class="net-val" id="net-sent" style="color:var(--green)">—</span>
+      </div>
+      <div class="net-row">
+        <span class="net-label">↓ RECV</span>
+        <span class="net-val" id="net-recv" style="color:var(--blue)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-bottom">
+    <div class="card">
+      <div class="panel-title">Top Processes by RAM</div>
+      <div id="process-list">Loading...</div>
+    </div>
+    <div class="card">
+      <div class="panel-title">Advisor Suggestions</div>
+      <div id="advisor-list">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ANOMALIES
+══════════════════════════════════════════ -->
+<div id="anomalies" class="page">
+  <div class="page-header">
+    <div class="page-title"><div class="title-dot"></div>Anomaly Log</div>
+    <div class="header-right">
+      <div class="status-pill"><div class="status-dot"></div>STATE CHANGES ONLY</div>
+      <button class="back-btn" onclick="showLanding()">← Back</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterAnomalies('ALL', this)">ALL</button>
+      <button class="filter-tab" onclick="filterAnomalies('CRITICAL', this)">CRITICAL</button>
+      <button class="filter-tab" onclick="filterAnomalies('WARNING', this)">WARNING</button>
+    </div>
+    <div id="anomaly-list">Loading...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     HISTORY
+══════════════════════════════════════════ -->
+<div id="history" class="page">
+  <div class="page-header">
+    <div class="page-title"><div class="title-dot"></div>System History</div>
+    <div class="header-right">
+      <div class="status-pill"><div class="status-dot"></div>LAST 100 · LIVE</div>
+      <button class="back-btn" onclick="showLanding()">← Back</button>
+    </div>
+  </div>
+
+  <!-- Combined multi-metric line chart -->
+  <div class="card history-full">
+    <div class="chart-header">
+      <div class="chart-title">All Metrics Over Time</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>CPU</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>RAM</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Disk</div>
+      </div>
+    </div>
+    <canvas id="combined-chart" height="60"></canvas>
+  </div>
+
+  <div class="history-grid">
+    <!-- Bar chart — last 10 readings -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">CPU — Last 10 Readings</div>
+      </div>
+      <canvas id="cpu-bar-chart" height="100"></canvas>
+    </div>
+
+    <!-- Radar chart — current state -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">System Health Radar</div>
+      </div>
+      <canvas id="radar-chart" height="100"></canvas>
+    </div>
+
+    <!-- RAM line chart -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">RAM % Over Time</div>
+      </div>
+      <canvas id="ram-line-chart" height="100"></canvas>
+    </div>
+
+    <!-- Disk line chart -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">Disk % Over Time</div>
+      </div>
+      <canvas id="disk-line-chart" height="100"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AI CHAT
+══════════════════════════════════════════ -->
+<div id="ai-chat" class="page">
+  <div class="chat-bg">
+    <div class="chat-bg-orb chat-bg-orb-1"></div>
+    <div class="chat-bg-orb chat-bg-orb-2"></div>
+    <div class="chat-bg-orb chat-bg-orb-3"></div>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title"><div class="title-dot"></div>AI System Advisor</div>
+    <div class="header-right">
+      <div class="status-pill"><div class="status-dot"></div>RAG · GROQ</div>
+      <button class="back-btn" onclick="showLanding()">← Back</button>
+    </div>
+  </div>
+
+  <div class="chat-pills">
+    <div class="chat-pill" onclick="askQ('Why is my RAM so high?')">Why is my RAM so high?</div>
+    <div class="chat-pill" onclick="askQ('Is my system healthy right now?')">System healthy?</div>
+    <div class="chat-pill" onclick="askQ('Which process should I close first?')">Which process to close?</div>
+    <div class="chat-pill" onclick="askQ('Show me a RAM trend analysis')">RAM trend</div>
+    <div class="chat-pill" onclick="askQ('Are there any software bugs detected?')">Software bugs?</div>
+    <div class="chat-pill" onclick="askQ('Any security concerns on my system?')">Security concerns?</div>
+  </div>
+
+  <div class="chat-window" id="chat-window">
+    <div class="msg ai">Hello. I am your System Watcher AI — powered by Groq and RAG. I have access to your live system data and recent history. Ask me anything about your system.</div>
+  </div>
+
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" type="text" placeholder="Ask about your system..." onkeydown="if(event.key==='Enter') sendMsg()"/>
+    <button class="chat-send" id="chat-send" onclick="sendMsg()">Send →</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CYCLING TEXT
+// ══════════════════════════════════════════
+const cycleWords = [
+  'memory leaks', 'runaway processes', 'handle leaks',
+  'disk pressure', 'CPU spikes', 'zombie processes',
+  'RAM exhaustion', 'suspicious activity'
+];
+let cycleIdx = 0;
+const cycler = document.getElementById('cycler');
+
+function cycleTxt() {
+  cycler.style.transition = 'opacity 0.3s, transform 0.3s, filter 0.3s';
+  cycler.style.opacity = '0';
+  cycler.style.transform = 'translateY(-10px)';
+  cycler.style.filter = 'blur(4px)';
+  setTimeout(() => {
+    cycleIdx = (cycleIdx + 1) % cycleWords.length;
+    cycler.textContent = cycleWords[cycleIdx];
+    cycler.style.transition = 'opacity 0.4s, transform 0.4s, filter 0.4s';
+    cycler.style.opacity = '1';
+    cycler.style.transform = 'translateY(0)';
+    cycler.style.filter = 'blur(0)';
+  }, 320);
+}
+setInterval(cycleTxt, 2800);
+
+// ══════════════════════════════════════════
+// GSAP LANDING ANIMATION
+// ══════════════════════════════════════════
+gsap.registerPlugin(ScrollTrigger);
+
+// Stagger feat cards on load
+gsap.from('.feat', {
+  opacity: 0,
+  y: 30,
+  stagger: 0.08,
+  duration: 0.8,
+  ease: 'power3.out',
+  delay: 1.2
+});
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function hideAll() {
+  document.getElementById('landing').style.display = 'none';
+  ['dashboard','anomalies','history','ai-chat'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  stopRefresh();
+  if (histInt) clearInterval(histInt);
+}
+
+function showLanding() {
+  hideAll();
+  document.getElementById('landing').style.display = 'block';
+}
+
+function showPage(id) {
+  hideAll();
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  if (id === 'dashboard') {
+    // Show fallback immediately — never shows "—"
+    document.getElementById('net-sent').textContent = '0.0 KB/s';
+    document.getElementById('net-recv').textContent = '0.0 KB/s';
+    fetchAll();
+    startRefresh();
+    // Fetch real network speed after 1.5s (needs two readings for delta)
+    setTimeout(() => {
+      fetch('/api/network').then(r=>r.json()).then(d => {
+        document.getElementById('net-sent').textContent = d.sent_kb + ' KB/s';
+        document.getElementById('net-recv').textContent = d.recv_kb + ' KB/s';
+      }).catch(()=>{});
+    }, 1500);
+  }
+  if (id === 'anomalies') fetchAnomalies();
+  // History: init charts immediately, fetch data, refresh every 10s
+  if (id === 'history') { initCharts(); fetchHistory(); histInt = setInterval(fetchHistory, 10000); }
+}
+
+// Pre-warm network baseline on page load so first reading is accurate
+fetch('/api/network').catch(()=>{});
+
+// ══════════════════════════════════════════
+// STATUS HELPERS
+// ══════════════════════════════════════════
+function gS(v,w,c) { return v>=c?'CRITICAL':v>=w?'WARNING':'OK'; }
+function sC(s) { return s==='CRITICAL'?'s-crit':s==='WARNING'?'s-warn':'s-ok'; }
+function bC(s) { return s==='CRITICAL'?'b-crit':s==='WARNING'?'b-warn':'b-ok'; }
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function fetchAll() {
+  fetch('/api/metrics').then(r=>r.json()).then(d => {
+    setM('cpu',  d.cpu,         75, 90, d.cpu+'%',          '');
+    setM('ram',  d.ram_percent,  80, 90, d.ram_percent+'%',  d.ram_used_mb+' MB / '+d.ram_total_mb+' MB');
+    setM('disk', d.disk_percent, 75, 90, d.disk_percent+'%', d.disk_free_gb+' GB free');
+  }).catch(()=>{});
+
+  // Always update network on each cycle
+  fetch('/api/network').then(r=>r.json()).then(d => {
+    document.getElementById('net-sent').textContent = d.sent_kb + ' KB/s';
+    document.getElementById('net-recv').textContent = d.recv_kb + ' KB/s';
+  }).catch(()=>{});
+
+  fetch('/api/processes').then(r=>r.json()).then(renderProcs).catch(()=>{});
+  fetch('/api/advisor').then(r=>r.json()).then(renderAdvisor).catch(()=>{});
+}
+
+function setM(k,v,w,c,disp,sub) {
+  const s = gS(v,w,c);
+  document.getElementById(k+'-val').textContent    = disp;
+  document.getElementById(k+'-sub').textContent    = sub;
+  document.getElementById(k+'-bar').style.width    = v+'%';
+  document.getElementById(k+'-bar').className      = 'bar-fill '+bC(s);
+  document.getElementById(k+'-status').textContent = s;
+  document.getElementById(k+'-status').className   = sC(s);
+}
+
+function renderProcs(procs) {
+  const max = procs[0]?.ram_mb || 1;
+  document.getElementById('process-list').innerHTML = procs.map(p => `
+    <div class="proc-row">
+      <div>
+        <div class="proc-name">${p.name}</div>
+        <div class="proc-pid">PID ${p.pid}</div>
+      </div>
+      <div class="proc-right">
+        <div class="proc-bar-wrap">
+          <div class="proc-bar-fill" style="width:${Math.round(p.ram_mb/max*100)}%"></div>
+        </div>
+        <div class="proc-mb">${p.ram_mb} MB</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAdvisor(items) {
+  document.getElementById('advisor-list').innerHTML = items.map(s => {
+    const tc = s.type==='SOFTWARE'?'tag-sw':s.type==='SECURITY'?'tag-sec':'tag-hw';
+    return `
+      <div class="adv-item">
+        <span class="adv-tag ${tc}">${s.type||'HW'}</span>
+        <div class="adv-text">${s.message}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// ANOMALIES
+// ══════════════════════════════════════════
+let allAnomalies = [];
+
+function fetchAnomalies() {
+  fetch('/api/anomalies').then(r=>r.json()).then(data => {
+    allAnomalies = data;
+    renderAnomalies(data);
+  }).catch(()=>{});
+}
+
+function filterAnomalies(type, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = type === 'ALL' ? allAnomalies : allAnomalies.filter(a => a.severity === type);
+  renderAnomalies(filtered);
+}
+
+function renderAnomalies(data) {
+  const c = document.getElementById('anomaly-list');
+  if (!data.length) {
+    c.innerHTML = '<p style="color:var(--muted);padding:1rem;font-family:JetBrains Mono,monospace;font-size:12px">No anomalies recorded yet.</p>';
+    return;
+  }
+  c.innerHTML = data.map(a => `
+    <div class="anomaly-item ${a.severity==='CRITICAL'?'crit':'warn'}">
+      <span class="anomaly-sev ${a.severity==='CRITICAL'?'sev-crit':'sev-warn'}">${a.severity}</span>
+      <div class="anomaly-body">
+        <div class="anomaly-metric">${a.metric}</div>
+        <div class="anomaly-msg">${a.message} — ${parseFloat(a.value).toFixed(1)}%</div>
+        <div class="anomaly-time">${a.timestamp}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// HISTORY CHARTS
+// ══════════════════════════════════════════
+let combinedC=null, cpuBarC=null, radarC=null, ramLineC=null, diskLineC=null;
+let histInt=null;
+
+const chartDefaults = {
+  responsive: true,
+  animation: false,
+  plugins: { legend: { display: false } },
+};
+
+const gridColor = 'rgba(255,255,255,0.04)';
+const tickColor = '#334155';
+const tickFont  = { family: 'JetBrains Mono', size: 10 };
+
+function mkLine(id, datasets) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: tickColor, maxTicksLimit: 6, maxRotation: 0, font: tickFont }, grid: { color: gridColor } },
+        y: { min: 0, max: 100, ticks: { color: tickColor, callback: v=>v+'%', font: tickFont }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function mkBar(id, color) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type: 'bar',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: color+'60', borderColor: color, borderWidth: 1, borderRadius: 4 }] },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: tickColor, maxRotation: 45, font: tickFont }, grid: { display: false } },
+        y: { min: 0, max: 100, ticks: { color: tickColor, callback: v=>v+'%', font: tickFont }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function mkRadar(id) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['CPU', 'RAM', 'Disk', 'Network', 'Health'],
+      datasets: [{
+        data: [0,0,0,0,0],
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,0.08)',
+        pointBackgroundColor: '#4ade80',
+        pointBorderColor: '#0a0a0f',
+        pointRadius: 3,
+        borderWidth: 1.5,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false },
+          grid: { color: gridColor },
+          pointLabels: { color: tickColor, font: tickFont },
+          angleLines: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+function initCharts() {
+  [combinedC, cpuBarC, radarC, ramLineC, diskLineC].forEach(c => { if(c) c.destroy(); });
+
+  combinedC = mkLine('combined-chart', [
+    { data:[], borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,0.06)', borderWidth:1.5, pointRadius:0, tension:0.4, fill:true, label:'CPU' },
+    { data:[], borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.06)', borderWidth:1.5, pointRadius:0, tension:0.4, fill:true, label:'RAM' },
+    { data:[], borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.06)', borderWidth:1.5, pointRadius:0, tension:0.4, fill:true, label:'Disk' },
+  ]);
+
+  cpuBarC    = mkBar('cpu-bar-chart', '#4ade80');
+  radarC     = mkRadar('radar-chart');
+  ramLineC   = mkLine('ram-line-chart', [{ data:[], borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', borderWidth:1.5, pointRadius:0, tension:0.4, fill:true }]);
+  diskLineC  = mkLine('disk-line-chart', [{ data:[], borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.08)', borderWidth:1.5, pointRadius:0, tension:0.4, fill:true }]);
+}
+
+function fetchHistory() {
+  fetch('/api/history').then(r=>r.json()).then(d => {
+    if (!d.length) return;
+
+    // Parse once — don't recompute on each chart update
+    const labels  = d.map(r=>r.timestamp.split(' ')[1]);
+    const cpuD    = d.map(r=>parseFloat(r.cpu));
+    const ramD    = d.map(r=>parseFloat(r.ram_percent));
+    const diskD   = d.map(r=>parseFloat(r.disk_percent));
+    const last10L = labels.slice(-10);
+    const last10C = cpuD.slice(-10);
+
+    // Use requestAnimationFrame to avoid blocking — renders charts without freezing UI
+    requestAnimationFrame(() => {
+      // Combined multi-line chart
+      combinedC.data.labels = labels;
+      combinedC.data.datasets[0].data = cpuD;
+      combinedC.data.datasets[1].data = ramD;
+      combinedC.data.datasets[2].data = diskD;
+      combinedC.update('none'); // 'none' skips animation = much faster
+
+      // CPU bar — last 10 only
+      cpuBarC.data.labels = last10L;
+      cpuBarC.data.datasets[0].data = last10C;
+      cpuBarC.update('none');
+
+      // Radar — derived from last 5 readings average
+      const avg = (arr, n) => arr.slice(-n).reduce((a,b)=>a+b,0)/Math.min(n, arr.length);
+      const avgCpu  = avg(cpuD, 5);
+      const avgRam  = avg(ramD, 5);
+      const avgDisk = avg(diskD, 5);
+      const health  = Math.max(0, 100 - (avgCpu*0.3 + avgRam*0.5 + avgDisk*0.2));
+      radarC.data.datasets[0].data = [avgCpu, avgRam, avgDisk, 10, health];
+      radarC.update('none');
+
+      // RAM and Disk line charts
+      ramLineC.data.labels = labels;
+      ramLineC.data.datasets[0].data = ramD;
+      ramLineC.update('none');
+
+      diskLineC.data.labels = labels;
+      diskLineC.data.datasets[0].data = diskD;
+      diskLineC.update('none');
+    });
+  }).catch(()=>{});
+}
+
+// ══════════════════════════════════════════
+// AI CHAT
+// ══════════════════════════════════════════
+function askQ(q) { document.getElementById('chat-input').value=q; sendMsg(); }
+
+function sendMsg() {
+  const input = document.getElementById('chat-input');
+  const send  = document.getElementById('chat-send');
+  const win   = document.getElementById('chat-window');
+  const msg   = input.value.trim();
+  if (!msg) return;
+
+  // Add user message immediately
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.textContent = msg;
+  win.appendChild(userDiv);
+
+  // Add typing indicator
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'msg thinking';
+  thinkDiv.id = 'thinking';
+  thinkDiv.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  win.appendChild(thinkDiv);
+  win.scrollTop = win.scrollHeight;
+
+  input.value   = '';
+  send.disabled = true;
+
+  // Slow warning after 6 seconds
+  const slowTimer = setTimeout(() => {
+    const t = document.getElementById('thinking');
+    if (t) t.innerHTML = '<span style="font-size:11px;color:var(--muted)">⏳ Groq is processing... usually takes 5–15s on free tier.</span>';
+  }, 6000);
+
+  // 60 second timeout — Groq free tier can be slow
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 60000);
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg }),
+    signal: controller.signal
+  })
+  .then(r => r.json())
+  .then(d => {
+    clearTimeout(slowTimer);
+    clearTimeout(timeoutId);
+    const t = document.getElementById('thinking');
+    if (t) t.remove();
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'msg ai';
+    aiDiv.innerHTML = d.reply
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    win.appendChild(aiDiv);
+    win.scrollTop = win.scrollHeight;
+    send.disabled = false;
+  })
+  .catch(err => {
+    clearTimeout(slowTimer);
+    clearTimeout(timeoutId);
+    const t = document.getElementById('thinking');
+    if (t) t.remove();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'msg ai';
+    errDiv.style.color = 'var(--red)';
+    errDiv.textContent = err.name === 'AbortError'
+      ? 'Request timed out. Groq free tier may be rate-limited. Try again in a moment.'
+      : 'Error connecting to AI. Check your .env API key.';
+    win.appendChild(errDiv);
+    send.disabled = false;
+  });
+}
+
+// ══════════════════════════════════════════
+// SPLINE LOADER — hide spinner once scene loads
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const viewer = document.getElementById('spline-scene');
+  const loader = document.getElementById('spline-loader');
+
+  if (viewer && loader) {
+    viewer.addEventListener('load', () => {
+      loader.classList.add('hidden');
+
+      // Remove Spline watermark after load
+      // It renders inside shadow DOM — we wait a tick then hide it
+      setTimeout(() => {
+        try {
+          const shadow = viewer.shadowRoot;
+          if (shadow) {
+            // Find and hide the logo/watermark div
+            shadow.querySelectorAll('a, div[class*="logo"], div[class*="watermark"], div[style*="position: fixed"]').forEach(el => {
+              el.style.display = 'none';
+            });
+          }
+        } catch(e) {}
+
+        // Also hide any fixed-position overlay divs injected into body
+        document.querySelectorAll('body > div[style*="position: fixed"][style*="bottom"]').forEach(el => {
+          if (el.textContent.toLowerCase().includes('spline')) {
+            el.style.display = 'none';
+          }
+        });
+      }, 2000);
+    });
+
+    // Fallback — hide loader after 8 seconds regardless
+    setTimeout(() => { if (loader) loader.classList.add('hidden'); }, 8000);
+  }
+});
+
+// ══════════════════════════════════════════
+// REFRESH
+// ══════════════════════════════════════════
+let refInt = null;
+function startRefresh() { refInt = setInterval(fetchAll, 5000); }
+function stopRefresh()  { if (refInt) clearInterval(refInt); }
+</script>
+</body>
+</html>

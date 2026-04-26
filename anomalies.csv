@@ -1,0 +1,42 @@
+timestamp,severity,metric,value,message
+2026-04-18 12:51:17,WARNING,RAM,83.4,Memory is running high
+2026-04-18 12:51:17,WARNING,DISK,79.3,Disk is getting full
+2026-04-19 11:04:27,WARNING,RAM,86.4,Memory is running high
+2026-04-19 11:04:27,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:04:56,WARNING,RAM,87.6,Memory is running high
+2026-04-19 11:04:56,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:05:03,WARNING,RAM,86.3,Memory is running high
+2026-04-19 11:05:03,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:05:10,WARNING,RAM,86.1,Memory is running high
+2026-04-19 11:05:10,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:05:17,WARNING,RAM,86.1,Memory is running high
+2026-04-19 11:05:17,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:05:24,WARNING,RAM,86.3,Memory is running high
+2026-04-19 11:05:24,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:05:31,WARNING,RAM,86.3,Memory is running high
+2026-04-19 11:05:31,WARNING,DISK,81.5,Disk is getting full
+2026-04-19 11:40:48,WARNING,RAM,87.6,RAM state changed
+2026-04-19 11:40:48,WARNING,DISK,82.0,Disk state changed
+2026-04-19 12:06:42,WARNING,RAM,88.4,RAM state changed
+2026-04-19 12:06:42,WARNING,DISK,81.8,Disk state changed
+2026-04-19 13:13:08,CRITICAL,RAM,91.3,RAM state changed
+2026-04-19 13:13:08,WARNING,DISK,81.3,Disk state changed
+2026-04-19 13:13:28,WARNING,RAM,87.0,RAM state changed
+2026-04-19 18:10:28,CRITICAL,RAM,92.7,RAM state changed
+2026-04-19 18:10:28,WARNING,DISK,81.5,Disk state changed
+2026-04-21 18:26:53,WARNING,RAM,81.8,RAM state changed
+2026-04-21 18:26:53,WARNING,DISK,81.3,Disk state changed
+2026-04-22 10:09:13,CRITICAL,RAM,93.3,RAM state changed
+2026-04-22 10:09:13,WARNING,DISK,81.5,Disk state changed
+2026-04-22 10:09:32,WARNING,RAM,88.9,RAM state changed
+2026-04-22 15:09:11,CRITICAL,RAM,91.4,RAM state changed
+2026-04-22 15:09:11,WARNING,DISK,81.6,Disk state changed
+2026-04-22 15:09:28,WARNING,RAM,89.2,RAM state changed
+2026-04-23 11:12:54,CRITICAL,RAM,93.3,RAM state changed
+2026-04-23 11:13:03,WARNING,RAM,88.6,RAM state changed
+2026-04-23 15:30:09,CRITICAL,RAM,91.0,RAM state changed
+2026-04-23 15:30:24,WARNING,RAM,89.0,RAM state changed
+2026-04-23 19:22:20,WARNING,RAM,88.7,RAM state changed
+2026-04-23 19:22:29,CRITICAL,RAM,93.1,RAM state changed
+2026-04-25 10:07:54,CRITICAL,RAM,92.9,RAM state changed
+2026-04-25 10:08:16,WARNING,RAM,89.3,RAM state changed
