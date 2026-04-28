@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "description": "Critical CPU and high RAM",
+    "cpu": 95,
+    "ram_percent": 88,
+    "disk_percent": 60,
+    "top_process": {"name": "chrome.exe", "pid": 1234, "ram_mb": 800},
+    "expected_anomaly": 1,
+    "expected_keywords": ["cpu", "ram", "critical", "close", "memory"]
+  },
+  {
+    "id": 2,
+    "description": "Normal system — all OK",
+    "cpu": 20,
+    "ram_percent": 55,
+    "disk_percent": 45,
+    "top_process": {"name": "explorer.exe", "pid": 5678, "ram_mb": 120},
+    "expected_anomaly": 0,
+    "expected_keywords": ["healthy", "normal", "no action"]
+  },
+  {
+    "id": 3,
+    "description": "High RAM only — warning level",
+    "cpu": 15,
+    "ram_percent": 85,
+    "disk_percent": 50,
+    "top_process": {"name": "Code.exe", "pid": 9999, "ram_mb": 600},
+    "expected_anomaly": 1,
+    "expected_keywords": ["ram", "memory", "warning", "close"]
+  },
+  {
+    "id": 4,
+    "description": "Disk nearly full",
+    "cpu": 10,
+    "ram_percent": 60,
+    "disk_percent": 92,
+    "top_process": {"name": "svchost.exe", "pid": 4321, "ram_mb": 200},
+    "expected_anomaly": 1,
+    "expected_keywords": ["disk", "full", "cleanup", "space"]
+  },
+  {
+    "id": 5,
+    "description": "CPU warning — not yet critical",
+    "cpu": 78,
+    "ram_percent": 65,
+    "disk_percent": 55,
+    "top_process": {"name": "MsMpEng.exe", "pid": 7777, "ram_mb": 300},
+    "expected_anomaly": 1,
+    "expected_keywords": ["cpu", "warning", "high", "load"]
+  },
+  {
+    "id": 6,
+    "description": "All metrics critical",
+    "cpu": 92,
+    "ram_percent": 95,
+    "disk_percent": 91,
+    "top_process": {"name": "chrome.exe", "pid": 2222, "ram_mb": 950},
+    "expected_anomaly": 1,
+    "expected_keywords": ["critical", "ram", "disk", "cpu", "close", "immediately"]
+  },
+  {
+    "id": 7,
+    "description": "Light system usage",
+    "cpu": 5,
+    "ram_percent": 40,
+    "disk_percent": 30,
+    "top_process": {"name": "notepad.exe", "pid": 3333, "ram_mb": 50},
+    "expected_anomaly": 0,
+    "expected_keywords": ["healthy", "normal", "no action"]
+  },
+  {
+    "id": 8,
+    "description": "RAM critical, CPU fine",
+    "cpu": 25,
+    "ram_percent": 93,
+    "disk_percent": 65,
+    "top_process": {"name": "Code.exe", "pid": 4444, "ram_mb": 700},
+    "expected_anomaly": 1,
+    "expected_keywords": ["ram", "critical", "memory", "close", "restart"]
+  },
+  {
+    "id": 9,
+    "description": "Disk warning only",
+    "cpu": 18,
+    "ram_percent": 58,
+    "disk_percent": 80,
+    "top_process": {"name": "explorer.exe", "pid": 5555, "ram_mb": 150},
+    "expected_anomaly": 1,
+    "expected_keywords": ["disk", "warning", "cleanup", "files"]
+  },
+  {
+    "id": 10,
+    "description": "Borderline — just below all thresholds",
+    "cpu": 74,
+    "ram_percent": 79,
+    "disk_percent": 74,
+    "top_process": {"name": "svchost.exe", "pid": 6666, "ram_mb": 180},
+    "expected_anomaly": 0,
+    "expected_keywords": ["healthy", "normal", "no action"]
+  }
+]
