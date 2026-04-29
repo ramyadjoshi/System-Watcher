@@ -13,7 +13,7 @@
 ![Groq](https://img.shields.io/badge/Groq-LLM-red?style=for-the-badge)
 ![psutil](https://img.shields.io/badge/psutil-System%20Metrics-purple?style=for-the-badge)
 
-<img src="assets/syswatch_animated_svg.svg" width="100%" alt="SysWatch Banner"/>
+<img src="assets/img.png" width="100%" alt="SysWatch Banner"/>
 </div>
 ---
 # 📌 Overview
