@@ -12,19 +12,10 @@
 ![GenAI](https://img.shields.io/badge/GenAI-RAG-green?style=for-the-badge)
 ![Groq](https://img.shields.io/badge/Groq-LLM-red?style=for-the-badge)
 ![psutil](https://img.shields.io/badge/psutil-System%20Metrics-purple?style=for-the-badge)
-
-
-<br><br>
-
-<div align="center">
+<br>
 
 <img src="assets/syswatch_animated_svg.svg" width="100%" alt="SysWatch Banner"/>
-
-
 </div>
-
----
-
 # 📌 Overview
 
 SysWatch is an intelligent real-time monitoring system that combines:
