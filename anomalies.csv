@@ -40,3 +40,6 @@ timestamp,severity,metric,value,message
 2026-04-23 19:22:29,CRITICAL,RAM,93.1,RAM state changed
 2026-04-25 10:07:54,CRITICAL,RAM,92.9,RAM state changed
 2026-04-25 10:08:16,WARNING,RAM,89.3,RAM state changed
+2026-04-28 15:58:39,CRITICAL,RAM,90.3,RAM state changed
+2026-04-28 15:58:39,WARNING,DISK,79.1,Disk state changed
+2026-04-28 15:58:49,WARNING,RAM,90.0,RAM state changed

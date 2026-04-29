@@ -6,16 +6,20 @@
 
 <br>
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge\&logo=python\&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-Backend-black?style=for-the-badge\&logo=flask)
-![Groq](https://img.shields.io/badge/Groq-Llama_3.1-purple?style=for-the-badge)
-![Windows](https://img.shields.io/badge/Platform-Windows_11-0078D6?style=for-the-badge\&logo=windows)
-![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
+![Flask](https://img.shields.io/badge/Flask-Backend-black?style=for-the-badge&logo=flask)
+![HTML](https://img.shields.io/badge/Frontend-HTML%2FCSS%2FJS-orange?style=for-the-badge&logo=html5)
+![GenAI](https://img.shields.io/badge/GenAI-RAG-green?style=for-the-badge)
+![Groq](https://img.shields.io/badge/Groq-LLM-red?style=for-the-badge)
+![psutil](https://img.shields.io/badge/psutil-System%20Metrics-purple?style=for-the-badge)
+
 
 <br><br>
 
-<img width="850" src="https://capsule-render.vercel.app/api?type=waving&color=0:0ea5e9,100:8b5cf6&height=220&section=header&text=SysWatch&fontSize=55&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=AI%20Powered%20System%20Monitoring%20and%20Analysis&descAlignY=58" />
+<div align="center">
+
+<img src="assets/syswatch_animated_svg.svg" width="100%" alt="SysWatch Banner"/>
+
 
 </div>
 
@@ -54,26 +58,6 @@ Instead of only displaying CPU/RAM numbers, SysWatch explains:
 | 🧪 Evaluation Framework | Precision, Recall, F1, Latency benchmarking                   |
 
 </div>
-
----
-
-# 🖼️ System Preview
-
-## 🏠 Landing Page
-
-<img width="100%" src="https://dummyimage.com/1200x600/0f172a/ffffff&text=Add+Your+Landing+Page+Screenshot+Here" />
-
-## 📊 Monitoring Dashboard
-
-<img width="100%" src="https://dummyimage.com/1200x600/111827/ffffff&text=Add+Dashboard+Screenshot+Here" />
-
-## 📈 History Analytics
-
-<img width="100%" src="https://dummyimage.com/1200x600/1e293b/ffffff&text=Add+Graphs+Screenshot+Here" />
-
-## 💬 AI Advisor
-
-<img width="100%" src="https://dummyimage.com/1200x600/172554/ffffff&text=Add+AI+Advisor+Screenshot+Here" />
 
 ---
 
