@@ -81,49 +81,6 @@ sys_watcher/
 
 ---
 
-# 🚀 Quick Start
-
-## 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/ramyadjoshi/System-Watcher.git
-cd System-Watcher
-```
-
----
-
-## 2️⃣ Install Dependencies
-
-```bash
-pip install flask psutil python-dotenv requests rich
-```
-
----
-
-## 3️⃣ Add Environment Variables
-
-Create a `.env` file:
-
-```env
-GROQ_API_KEY=your_api_key_here
-```
-
----
-
-## 4️⃣ Run Application
-
-```bash
-python app.py
-```
-
-Open browser:
-
-```text
-http://127.0.0.1:5000
-```
-
----
-
 # 🌐 API Endpoints
 
 | Endpoint         | Purpose                     |
