@@ -1227,6 +1227,7 @@
     <div class="page-title"><div class="title-dot"></div>System History</div>
     <div class="header-right">
       <div class="status-pill"><div class="status-dot"></div>LAST 100 · LIVE</div>
+      <button class="back-btn" id="report-btn" onclick="downloadReport()" style="background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.3);color:var(--green);">📄System Health Report</button>
       <button class="back-btn" onclick="showLanding()">← Back</button>
     </div>
   </div>
@@ -1762,6 +1763,29 @@ document.addEventListener('DOMContentLoaded', () => {
 let refInt = null;
 function startRefresh() { refInt = setInterval(fetchAll, 5000); }
 function stopRefresh()  { if (refInt) clearInterval(refInt); }
+//  Adding the js function for system health report generator
+function downloadReport() {
+  const btn = document.getElementById('report-btn');
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  fetch('/api/report')
+    .then(r => r.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a   = document.createElement('a');
+      a.href    = url;
+      a.download = `SysWatch_Report_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      btn.textContent = '📄 Generate Report';
+      btn.disabled = false;
+    })
+    .catch(() => {
+      btn.textContent = '📄 Generate Report';
+      btn.disabled = false;
+      alert('Report generation failed. Check Flask is running.');
+    });
+}
 </script>
 </body>
 </html>

@@ -246,7 +246,18 @@ Answer concisely and specifically using only this data. Be direct and actionable
     except req.exceptions.Timeout:
         return jsonify({'reply': 'Request timed out. Groq free tier may be rate-limited. Please wait a moment and try again.'})
     except Exception as e:
-        return jsonify({'reply': f'Connection error: {str(e)}'})
+        return jsonify({'reply': f'Connection error: {str(e)}'}) 
+    
+@app.route('/api/report')
+def generate_report_route():
+    from report_generator import generate_report
+    from flask import Response
+    report_text, ts_file = generate_report()
+    return Response(
+        report_text,
+        mimetype='text/plain',
+        headers={'Content-Disposition': f'attachment; filename=SysWatch_Report_{ts_file}.txt'}
+    )
 
 if __name__ == '__main__':
     # Prime the network cache on startup so first reading is accurate
